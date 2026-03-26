@@ -6,6 +6,7 @@ class BookmarkManagerApp {
         this.currentView = 'list';
         this.currentFilter = 'all';
         this.currentFolderId = null; // 初始化当前文件夹ID
+        this.currentEditingBookmarkId = null; // 初始化当前编辑的收藏夹ID
         this.visitHistory = {};
         this.init();
     }
@@ -203,6 +204,21 @@ class BookmarkManagerApp {
         // 文件导入
         document.getElementById('fileInput').addEventListener('change', (e) => {
             this.importBookmarks(e.target.files[0]);
+        });
+
+        // 编辑弹窗按钮
+        document.getElementById('cancelEditBookmark').addEventListener('click', () => {
+            this.hideEditBookmarkModal();
+        });
+        document.getElementById('saveEditBookmark').addEventListener('click', () => {
+            this.saveEditBookmark();
+        });
+
+        // 点击弹窗外部关闭弹窗
+        document.getElementById('editBookmarkModal').addEventListener('click', (e) => {
+            if (e.target.id === 'editBookmarkModal') {
+                this.hideEditBookmarkModal();
+            }
         });
 
         // 快速访问链接现在由Vue组件处理，不需要在这里绑定事件
@@ -1643,19 +1659,51 @@ class BookmarkManagerApp {
     async editBookmark(bookmarkId) {
         try {
             const bookmark = await chrome.bookmarks.get(bookmarkId);
-            const newTitle = prompt('编辑标题:', bookmark[0].title);
-            const newUrl = prompt('编辑URL:', bookmark[0].url);
             
-            if (newTitle !== null && newUrl !== null) {
-                await chrome.bookmarks.update(bookmarkId, {
-                    title: newTitle,
-                    url: newUrl
-                });
-                this.refresh();
-            }
+            // 填充弹窗表单
+            document.getElementById('editBookmarkTitle').value = bookmark[0].title;
+            document.getElementById('editBookmarkUrl').value = bookmark[0].url;
+            
+            // 显示弹窗
+            const modal = document.getElementById('editBookmarkModal');
+            modal.classList.add('modal-visible');
+            modal.style.display = 'flex';
+            
+            // 保存当前编辑的收藏夹ID
+            this.currentEditingBookmarkId = bookmarkId;
         } catch (error) {
             console.error('编辑收藏夹失败:', error);
         }
+    }
+
+    async saveEditBookmark() {
+        try {
+            const newTitle = document.getElementById('editBookmarkTitle').value.trim();
+            const newUrl = document.getElementById('editBookmarkUrl').value.trim();
+            
+            if (!newTitle || !newUrl) {
+                alert('请填写标题和URL');
+                return;
+            }
+            
+            if (this.currentEditingBookmarkId) {
+                await chrome.bookmarks.update(this.currentEditingBookmarkId, {
+                    title: newTitle,
+                    url: newUrl
+                });
+                this.hideEditBookmarkModal();
+                this.refresh();
+            }
+        } catch (error) {
+            console.error('保存收藏夹失败:', error);
+        }
+    }
+
+    hideEditBookmarkModal() {
+        const modal = document.getElementById('editBookmarkModal');
+        modal.classList.remove('modal-visible');
+        modal.style.display = 'none';
+        this.currentEditingBookmarkId = null;
     }
 
     async deleteBookmark(bookmarkId) {
