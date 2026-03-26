@@ -521,7 +521,6 @@ html[data-theme="light"] body .status-bar {
 .add-folder-btn:hover {
     background: var(--bg-tertiary);
     color: var(--button-primary);
-    transform: scale(1.1);
 }
 
 /* 快速访问样式 - 强制覆盖 */
@@ -626,7 +625,6 @@ html[data-theme="light"] body .status-bar {
 
 .folder-toggle:hover {
     color: var(--button-primary);
-    transform: scale(1.1);
 }
 
 .folder-toggle-placeholder {
@@ -663,14 +661,24 @@ html[data-theme="light"] body .status-bar {
 }
 
 .folder-actions {
-    display: none;
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    visibility: hidden;
     gap: 4px;
-    margin-left: 8px;
     flex-shrink: 0;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    background: var(--bg-secondary);
+    padding: 4px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .folder-item:hover .folder-actions {
-    display: flex;
+    opacity: 1;
+    visibility: visible;
 }
 
 .folder-action-btn {
