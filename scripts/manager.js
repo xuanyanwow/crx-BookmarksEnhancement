@@ -2773,10 +2773,20 @@ class BookmarkManagerApp {
     }
 
     async refresh() {
+        // 保存当前选中的文件夹ID
+        const savedFolderId = this.currentFolderId;
+        
         document.getElementById('loadingIndicator').style.display = 'flex';
         await this.loadData();
         this.renderFolderTree();
-        await this.renderBookmarksView();
+        
+        // 如果之前有选中的文件夹，恢复选中状态
+        if (savedFolderId) {
+            await this.filterByFolder(savedFolderId);
+        } else {
+            await this.renderBookmarksView();
+        }
+        
         this.updateStats();
         this.selectedBookmarks.clear();
         this.resetButtonState();
