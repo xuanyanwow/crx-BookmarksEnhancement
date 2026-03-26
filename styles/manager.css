@@ -674,11 +674,21 @@ html[data-theme="light"] body .status-bar {
     padding: 4px;
     border-radius: 4px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 10;
 }
 
-.folder-item:hover .folder-actions {
+.folder-item:hover .folder-actions,
+.folder-item .folder-actions:hover {
     opacity: 1;
     visibility: visible;
+}
+
+.folder-item {
+    position: relative;
+}
+
+.folder-item:hover {
+    z-index: 5;
 }
 
 .folder-action-btn {
