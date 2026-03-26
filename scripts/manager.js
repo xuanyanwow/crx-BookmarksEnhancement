@@ -210,6 +210,9 @@ class BookmarkManagerApp {
         
         if (!resizeHandle || !sidebar) return;
         
+        // 从localStorage恢复保存的宽度
+        this.restoreSidebarWidth(sidebar);
+        
         let isResizing = false;
         let startX = 0;
         let startWidth = 0;
@@ -243,8 +246,38 @@ class BookmarkManagerApp {
                 isResizing = false;
                 resizeHandle.classList.remove('active');
                 document.body.style.cursor = '';
+                
+                // 保存当前宽度到localStorage
+                this.saveSidebarWidth(sidebar.offsetWidth);
             }
         });
+    }
+
+    // 保存侧边栏宽度到localStorage
+    saveSidebarWidth(width) {
+        try {
+            localStorage.setItem('sidebarWidth', width.toString());
+        } catch (error) {
+            console.error('保存侧边栏宽度失败:', error);
+        }
+    }
+
+    // 从localStorage恢复侧边栏宽度
+    restoreSidebarWidth(sidebar) {
+        try {
+            const savedWidth = localStorage.getItem('sidebarWidth');
+            if (savedWidth) {
+                const width = parseInt(savedWidth);
+                const minWidth = 200;
+                const maxWidth = 600;
+                
+                if (width >= minWidth && width <= maxWidth) {
+                    sidebar.style.width = `${width}px`;
+                }
+            }
+        } catch (error) {
+            console.error('恢复侧边栏宽度失败:', error);
+        }
     }
 
     setupContextMenu() {
