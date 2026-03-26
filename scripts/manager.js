@@ -173,6 +173,11 @@ class BookmarkManagerApp {
             this.showAddFolderDialog();
         });
 
+        // 一键折叠按钮
+        document.getElementById('collapseAllBtn').addEventListener('click', () => {
+            this.collapseAllFolders();
+        });
+
         // 右侧工具栏操作按钮
         document.getElementById('refreshDataBtn').addEventListener('click', () => {
             this.refresh();
@@ -225,7 +230,7 @@ class BookmarkManagerApp {
             
             // 限制最小和最大宽度
             const minWidth = 200;
-            const maxWidth = 400;
+            const maxWidth = 600;
             
             newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
             
@@ -517,6 +522,39 @@ class BookmarkManagerApp {
         } else {
             toggleIcon.innerHTML = '<polyline points="6 9 12 15 18 9"></polyline>';
         }
+    }
+
+    // 一键折叠所有文件夹
+    collapseAllFolders() {
+        const allFolders = document.querySelectorAll('.folder-item');
+        
+        // 按层级从高到低排序，确保先折叠子文件夹
+        const foldersByLevel = Array.from(allFolders).sort((a, b) => {
+            const levelA = parseInt(a.style.paddingLeft) / 16 - 0.75;
+            const levelB = parseInt(b.style.paddingLeft) / 16 - 0.75;
+            return levelB - levelA;
+        });
+        
+        // 先折叠所有文件夹
+        foldersByLevel.forEach(folderItem => {
+            if (!folderItem.classList.contains('collapsed')) {
+                folderItem.classList.add('collapsed');
+                
+                // 更新折叠图标
+                const toggleIcon = folderItem.querySelector('.folder-toggle svg');
+                if (toggleIcon) {
+                    toggleIcon.innerHTML = '<polyline points="9 18 15 12 9 6"></polyline>';
+                }
+            }
+        });
+        
+        // 然后隐藏所有非顶级文件夹
+        allFolders.forEach(folderItem => {
+            const folderLevel = parseInt(folderItem.style.paddingLeft) / 16 - 0.75;
+            if (folderLevel > 0) {
+                folderItem.style.display = 'none';
+            }
+        });
     }
 
     async renderBookmarksView() {

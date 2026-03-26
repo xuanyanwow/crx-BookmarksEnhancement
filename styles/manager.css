@@ -394,8 +394,8 @@ html[data-theme="light"] body .status-bar {
 /* 左侧边栏 */
 .sidebar {
     width: 20%;
-    min-width: 200px;
-    max-width: 400px;
+    min-width: 400px;
+    max-width: 600px;
     background: var(--sidebar-bg);
     border-right: 1px solid var(--sidebar-border);
     overflow-y: auto;
@@ -496,6 +496,12 @@ html[data-theme="light"] body .status-bar {
 
 .section-header h3 {
     margin-bottom: 0 !important;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .add-folder-btn {
