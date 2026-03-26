@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>收藏夹管理增强 - 主界面</title>
+    <link rel="stylesheet" href="styles/manager.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 顶部导航栏 -->
+        <header class="top-header">
+            <div class="header-left">
+                <div class="logo">
+                    <img src="icons/icon32.png" alt="Logo" class="logo-icon">
+                    <h1>收藏夹管理页面</h1>
+                </div>
+                <div class="breadcrumb">
+                    <span id="currentPath">所有收藏夹</span>
+                </div>
+            </div>
+            
+            <div class="header-center">
+                <div class="search-container">
+                    <input type="text" id="globalSearch" placeholder="搜索收藏夹..." />
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <div class="view-controls">
+                    <button id="listViewBtn" class="view-btn active">列表</button>
+                    <button id="gridViewBtn" class="view-btn">网格</button>
+                </div>
+
+                
+                <button id="refreshBtn" class="action-btn">刷新</button>
+                <button id="themeToggleBtn" class="theme-toggle-btn" title="切换主题">
+                    <svg class="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- 太阳图标 - 日间模式显示 -->
+                        <g class="sun-icon">
+                            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2" fill="none"/>
+                        </g>
+                        <!-- 月亮图标 - 夜间模式显示 -->
+                        <g class="moon-icon">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/>
+                        </g>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- 左侧边栏 -->
+            <aside class="sidebar">
+                <div class="sidebar-section expanded">
+                    <div class="section-header">
+                        <h3>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                                <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+                            </svg>
+                            文件夹分类
+                        </h3>
+                        <button id="addFolderBtn" class="add-folder-btn" title="新增文件夹">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="folder-tree" id="folderTree">
+                        <!-- 文件夹树将通过JavaScript生成 -->
+                    </div>
+                </div>
+
+                <div class="sidebar-section compact">
+                    <h3>快速访问</h3>
+                    <ul class="quick-access">
+                        <li><a href="#" data-filter="all">所有收藏夹</a></li>
+                        <li><a href="#" data-filter="recent">最近添加</a></li>
+                        <li><a href="#" data-filter="frequent">常用收藏夹</a></li>
+                        <li><a href="#" data-filter="unorganized">未分类</a></li>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- 主内容区域 -->
+            <main class="content-area">
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <select id="sortSelect">
+                            <option value="name">按名称排序</option>
+                            <option value="date">按添加时间</option>
+                            <option value="frequency">按访问频率</option>
+                            <option value="smart">智能排序</option>
+                        </select>
+                    </div>
+                    <div class="toolbar-separator"></div>
+                    <div class="toolbar-actions">
+                        <button id="toolbarRefreshBtn" class="toolbar-btn toolbar-btn-primary">
+                            <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+                            </svg>
+                            <span class="btn-text">刷新数据</span>
+                        </button>
+                        <button id="selectAllBtn" class="toolbar-btn toolbar-btn-primary">
+                            <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20,6 9,17 4,12"/>
+                            </svg>
+                            <span class="btn-text">全选</span>
+                        </button>
+                        <button id="deleteSelectedBtn" class="toolbar-btn toolbar-btn-danger" disabled>
+                            <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3,6 5,6 21,6"/>
+                                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                            </svg>
+                            <span class="btn-text">删除选中</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bookmarks-container">
+                    <div id="loadingIndicator" class="loading">
+                        <div class="spinner"></div>
+                        <p>加载收藏夹中...</p>
+                    </div>
+                    
+                    <div id="bookmarksList" class="bookmarks-list list-view">
+                        <!-- 收藏夹列表将通过JavaScript生成 -->
+                    </div>
+                    
+                    <div id="emptyState" class="empty-state" style="display: none;">
+                        <h3>暂无收藏夹</h3>
+                        <p>开始添加一些收藏夹吧！</p>
+                    </div>
+                </div>
+            </main>
+
+            <!-- 右侧工具栏 -->
+            <aside class="right-sidebar">
+                <div class="sidebar-section">
+                    <h3>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                            <polyline points="22,7 13.5,15.5 8.5,10.5 2,17"/>
+                            <polyline points="16,7 22,7 22,13"/>
+                        </svg>
+                        统计信息
+                    </h3>
+                    <div class="stats-panel">
+                        <div class="stat-item">
+                            <span class="stat-label">总收藏夹</span>
+                            <span class="stat-value" id="totalBookmarks">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">当前分类</span>
+                            <span class="stat-value" id="totalFolders">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                            <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>
+                        </svg>
+                        工具
+                    </h3>
+                    <ul class="tools-list">
+                        <li><button id="importBtn" class="tool-btn">
+                            <span class="icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                                </svg>
+                            </span>
+                            <span class="text">导入收藏夹</span>
+                        </button></li>
+                        <li><button id="exportBtn" class="tool-btn">
+                            <span class="icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                                </svg>
+                            </span>
+                            <span class="text">导出收藏夹</span>
+                        </button></li>
+                        <li><button id="organizeBtn" class="tool-btn">
+                            <span class="icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+                                </svg>
+                            </span>
+                            <span class="text">自动分类</span>
+                        </button></li>
+                        <li><button id="cleanEmptyFoldersBtn" class="tool-btn">
+                            <span class="icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3,6 5,6 21,6"/>
+                                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                                </svg>
+                            </span>
+                            <span class="text">清理空文件夹</span>
+                        </button></li>
+                    </ul>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                            <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/>
+                        </svg>
+                        操作
+                    </h3>
+                    <ul class="tools-list">
+                        <li><button id="refreshDataBtn" class="tool-btn">
+                            <span class="icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+                                </svg>
+                            </span>
+                            <span class="text">刷新数据</span>
+                        </button></li>
+                        <li><button id="selectAllItemsBtn" class="tool-btn">
+                            <span class="icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"/>
+                                </svg>
+                            </span>
+                            <span class="text">全选</span>
+                        </button></li>
+                        <li><button id="deleteSelectedItemsBtn" class="tool-btn">
+                            <span class="icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3,6 5,6 21,6"/>
+                                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                                </svg>
+                            </span>
+                            <span class="text">删除选中</span>
+                        </button></li>
+                    </ul>
+                </div>
+
+                            </aside>
+        </div>
+
+        <!-- 状态栏 -->
+        <footer class="status-bar">
+            <span id="totalStats">总计: 0 个收藏夹, 0 个文件夹</span>
+            <span id="selectionStats" class="status-right">已选择: 0 个项目</span>
+        </footer>
+    </div>
+
+    <!-- 右键菜单 -->
+    <div id="contextMenu" class="context-menu" style="display: none;">
+        <ul>
+            <li data-action="open">打开</li>
+            <li data-action="open-new-tab">在新标签页打开</li>
+            <li class="separator"></li>
+            <li data-action="edit">编辑</li>
+            <li data-action="copy-url">复制链接</li>
+            <li class="separator"></li>
+            <li data-action="move">移动到...</li>
+            <li data-action="delete">删除</li>
+        </ul>
+    </div>
+
+    <input type="file" id="fileInput" accept=".json,.html" style="display: none;">
+    
+    <!-- 自动分类进度对话框 -->
+    <div id="llmProgressModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                        <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+                    </svg>
+                    自动分类进行中
+                </h3>
+            </div>
+            <div class="modal-body">
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="progressStatus">正在分析收藏夹...</span>
+                        <span id="progressCount">0/0</span>
+                    </div>
+                </div>
+                <div id="currentItem" class="current-item">
+                    正在初始化分类任务...
+                </div>
+                <div class="llm-status" style="display: none;">
+                    <span id="llmStatusIndicator" class="status-indicator">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+                        </svg>
+                    </span>
+                    <span id="llmStatusText">检查AI服务状态...</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelClassification" class="btn btn-secondary">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/rule-classifier.js"></script>
+    <script src="scripts/theme-manager.js"></script>
+    <script src="scripts/manager.js"></script>
+    <script src="scripts/quick-access-modal.js"></script>
+</body>
+</html>
