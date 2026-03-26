@@ -193,6 +193,53 @@ class BookmarkManagerApp {
 
         // 右键菜单
         this.setupContextMenu();
+
+        // 侧边栏拖拽调整宽度
+        this.setupSidebarResize();
+    }
+
+    // 侧边栏拖拽调整宽度
+    setupSidebarResize() {
+        const resizeHandle = document.getElementById('resizeHandle');
+        const sidebar = document.querySelector('.sidebar');
+        
+        if (!resizeHandle || !sidebar) return;
+        
+        let isResizing = false;
+        let startX = 0;
+        let startWidth = 0;
+        
+        resizeHandle.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            startX = e.clientX;
+            startWidth = sidebar.offsetWidth;
+            resizeHandle.classList.add('active');
+            document.body.style.cursor = 'col-resize';
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            const deltaX = e.clientX - startX;
+            let newWidth = startWidth + deltaX;
+            
+            // 限制最小和最大宽度
+            const minWidth = 200;
+            const maxWidth = 400;
+            
+            newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
+            
+            // 设置新宽度
+            sidebar.style.width = `${newWidth}px`;
+        });
+        
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                resizeHandle.classList.remove('active');
+                document.body.style.cursor = '';
+            }
+        });
     }
 
     setupContextMenu() {
@@ -268,6 +315,11 @@ class BookmarkManagerApp {
             const isEmpty = folder.children === 0;
             html += `
                 <div class="folder-item ${isEmpty ? 'empty-folder' : ''}" data-id="${this.escapeHtml(folder.id)}" data-index="${index}" style="padding-left: ${indent + 12}px">
+                    <span class="folder-toggle" title="折叠/展开">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </span>
                     <span class="folder-icon">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
@@ -309,6 +361,7 @@ class BookmarkManagerApp {
 
         // 绑定文件夹点击事件
         container.querySelectorAll('.folder-item').forEach(item => {
+            const folderToggle = item.querySelector('.folder-toggle');
             const folderName = item.querySelector('.folder-name');
             const renameBtn = item.querySelector('.rename-folder-btn');
             const moveUpBtn = item.querySelector('.move-up-btn');
@@ -319,6 +372,14 @@ class BookmarkManagerApp {
             folderName.addEventListener('click', () => {
                 this.filterByFolder(item.dataset.id);
             });
+            
+            // 点击折叠按钮
+            if (folderToggle) {
+                folderToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.toggleFolder(item);
+                });
+            }
             
             // 点击重命名按钮
             renameBtn.addEventListener('click', (e) => {
@@ -418,6 +479,44 @@ class BookmarkManagerApp {
                 }
             });
         });
+    }
+
+    // 折叠/展开文件夹
+    toggleFolder(folderItem) {
+        const folderId = folderItem.dataset.id;
+        const folderLevel = parseInt(folderItem.style.paddingLeft) / 16 - 0.75; // 计算文件夹层级
+        
+        // 切换折叠状态
+        folderItem.classList.toggle('collapsed');
+        
+        // 找到所有子文件夹并切换显示状态
+        const allFolders = document.querySelectorAll('.folder-item');
+        const folderIndex = Array.from(allFolders).indexOf(folderItem);
+        
+        for (let i = folderIndex + 1; i < allFolders.length; i++) {
+            const childFolder = allFolders[i];
+            const childLevel = parseInt(childFolder.style.paddingLeft) / 16 - 0.75;
+            
+            // 如果是子文件夹
+            if (childLevel > folderLevel) {
+                if (folderItem.classList.contains('collapsed')) {
+                    childFolder.style.display = 'none';
+                } else {
+                    childFolder.style.display = 'flex';
+                }
+            } else {
+                // 不是子文件夹，停止处理
+                break;
+            }
+        }
+        
+        // 更新折叠图标
+        const toggleIcon = folderItem.querySelector('.folder-toggle svg');
+        if (folderItem.classList.contains('collapsed')) {
+            toggleIcon.innerHTML = '<polyline points="9 18 15 12 9 6"></polyline>';
+        } else {
+            toggleIcon.innerHTML = '<polyline points="6 9 12 15 18 9"></polyline>';
+        }
     }
 
     async renderBookmarksView() {
