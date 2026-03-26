@@ -95,6 +95,16 @@ class BookmarkManagerApp {
                         type: 'bookmark'
                     });
                 } else {
+                    // 统计当前文件夹的子文件夹数量
+                    let childFoldersCount = 0;
+                    if (child.children) {
+                        for (const grandChild of child.children) {
+                            if (!grandChild.url) {
+                                childFoldersCount++;
+                            }
+                        }
+                    }
+                    
                     // 文件夹
                     bookmarks.push({
                         id: child.id,
@@ -103,7 +113,8 @@ class BookmarkManagerApp {
                         path: currentPath,
                         level: level,
                         type: 'folder',
-                        children: child.children ? child.children.length : 0
+                        children: child.children ? child.children.length : 0,
+                        childFolders: childFoldersCount
                     });
                     // 递归处理子项目
                     bookmarks = bookmarks.concat(this.flattenBookmarks(child, currentPath, level + 1));
@@ -351,13 +362,17 @@ class BookmarkManagerApp {
         folders.forEach((folder, index) => {
             const indent = folder.level * 16;
             const isEmpty = folder.children === 0;
+            // 检查是否有子文件夹（childFolders > 0 表示有子文件夹）
+            const hasChildren = folder.childFolders > 0;
             html += `
                 <div class="folder-item ${isEmpty ? 'empty-folder' : ''}" data-id="${this.escapeHtml(folder.id)}" data-index="${index}" style="padding-left: ${indent + 12}px">
+                    ${hasChildren ? `
                     <span class="folder-toggle" title="折叠/展开">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="6 9 12 15 18 9"></polyline>
                         </svg>
                     </span>
+                    ` : '<span class="folder-toggle-placeholder"></span>'}
                     <span class="folder-icon">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
@@ -411,8 +426,8 @@ class BookmarkManagerApp {
                 this.filterByFolder(item.dataset.id);
             });
             
-            // 点击折叠按钮
-            if (folderToggle) {
+            // 点击折叠按钮（只对有子文件夹的文件夹绑定）
+            if (folderToggle && !folderToggle.classList.contains('folder-toggle-placeholder')) {
                 folderToggle.addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.toggleFolder(item);

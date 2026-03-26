@@ -629,6 +629,13 @@ html[data-theme="light"] body .status-bar {
     transform: scale(1.1);
 }
 
+.folder-toggle-placeholder {
+    margin-right: 4px;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
 .folder-icon {
     margin-right: 8px;
     width: 16px;
