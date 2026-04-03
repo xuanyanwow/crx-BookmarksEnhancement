@@ -7,6 +7,7 @@ class BookmarkManagerApp {
         this.currentFilter = 'all';
         this.currentFolderId = null; // 初始化当前文件夹ID
         this.currentEditingBookmarkId = null; // 初始化当前编辑的收藏夹ID
+        this.currentMovingBookmarkId = null; // 初始化当前移动的收藏夹ID
         this.visitHistory = {};
         this.init();
     }
@@ -221,6 +222,21 @@ class BookmarkManagerApp {
             }
         });
 
+        // 移动弹窗按钮
+        document.getElementById('cancelMoveBookmark').addEventListener('click', () => {
+            this.hideMoveBookmarkModal();
+        });
+        document.getElementById('confirmMoveBookmark').addEventListener('click', () => {
+            this.moveBookmarkToFolder();
+        });
+
+        // 点击弹窗外部关闭弹窗
+        document.getElementById('moveBookmarkModal').addEventListener('click', (e) => {
+            if (e.target.id === 'moveBookmarkModal') {
+                this.hideMoveBookmarkModal();
+            }
+        });
+
         // 快速访问链接现在由Vue组件处理，不需要在这里绑定事件
 
         // 右键菜单
@@ -366,6 +382,9 @@ class BookmarkManagerApp {
                 break;
             case 'delete':
                 this.deleteBookmark(bookmarkId);
+                break;
+            case 'move':
+                this.showMoveBookmarkModal(bookmarkId);
                 break;
         }
     }
@@ -1704,6 +1723,70 @@ class BookmarkManagerApp {
         modal.classList.remove('modal-visible');
         modal.style.display = 'none';
         this.currentEditingBookmarkId = null;
+    }
+
+    async showMoveBookmarkModal(bookmarkId) {
+        try {
+            // 保存当前编辑的收藏夹ID
+            this.currentMovingBookmarkId = bookmarkId;
+            
+            // 获取所有文件夹
+            const folders = this.bookmarks.filter(b => b.type === 'folder');
+            
+            // 填充文件夹下拉列表
+            const select = document.getElementById('moveToFolderSelect');
+            select.innerHTML = '';
+            
+            // 添加书签栏根目录
+            const rootOption = document.createElement('option');
+            rootOption.value = '1'; // 书签栏的ID通常是'1'
+            rootOption.textContent = '书签栏';
+            select.appendChild(rootOption);
+            
+            // 添加其他文件夹
+            folders.forEach(folder => {
+                const option = document.createElement('option');
+                option.value = folder.id;
+                
+                // 添加缩进以显示层级关系
+                const indent = folder.level * 2;
+                option.textContent = ' '.repeat(indent) + folder.title;
+                
+                select.appendChild(option);
+            });
+            
+            // 显示弹窗
+            const modal = document.getElementById('moveBookmarkModal');
+            modal.classList.add('modal-visible');
+            modal.style.display = 'flex';
+        } catch (error) {
+            console.error('显示移动弹窗失败:', error);
+        }
+    }
+
+    async moveBookmarkToFolder() {
+        try {
+            const folderId = document.getElementById('moveToFolderSelect').value;
+            
+            if (this.currentMovingBookmarkId) {
+                // 使用Chrome API移动书签
+                await chrome.bookmarks.move(this.currentMovingBookmarkId, {
+                    parentId: folderId
+                });
+                
+                this.hideMoveBookmarkModal();
+                this.refresh();
+            }
+        } catch (error) {
+            console.error('移动收藏夹失败:', error);
+        }
+    }
+
+    hideMoveBookmarkModal() {
+        const modal = document.getElementById('moveBookmarkModal');
+        modal.classList.remove('modal-visible');
+        modal.style.display = 'none';
+        this.currentMovingBookmarkId = null;
     }
 
     async deleteBookmark(bookmarkId) {
